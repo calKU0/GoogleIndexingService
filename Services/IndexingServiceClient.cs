@@ -68,7 +68,7 @@ public sealed class IndexingServiceClient(ILogger<IndexingServiceClient> logger,
                 "AppSettings:GoogleCredentials is required.");
         }
 
-        var serviceCredential = await CredentialFactory.FromFileAsync<ServiceAccountCredential>(_options.GoogleCredentials, stoppingToken);
+        var serviceCredential = await CredentialFactory.FromFileAsync<ServiceAccountCredential>(Path.Combine(AppContext.BaseDirectory, _options.GoogleCredentials), stoppingToken);
 
         var googleCredential = GoogleCredential
             .FromServiceAccountCredential(serviceCredential)
