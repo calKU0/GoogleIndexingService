@@ -25,14 +25,16 @@ public sealed class Worker(
                 if (_lastRunTime.Date >= DateTime.UtcNow.Date)
                 {
                     logger.LogInformation("Indexing already performed today. Skipping.");
-                    return;
+                    await Task.Delay(TimeSpan.FromMinutes(_options.RunIntervalMinutes), stoppingToken);
+                    continue;
                 }
 
                 var urls = await urlProvider.GetUrlsAsync(stoppingToken);
                 if (urls.Count == 0)
                 {
                     logger.LogWarning("No URLs available for indexing.");
-                    return;
+                    await Task.Delay(TimeSpan.FromMinutes(_options.RunIntervalMinutes), stoppingToken);
+                    continue;
                 }
 
                 logger.LogInformation("Found {UrlCount} URLs to index.", urls.Count);
@@ -51,7 +53,8 @@ public sealed class Worker(
                 if (state.DailyCount >= _options.DailyQuota)
                 {
                     logger.LogInformation("Daily quota already reached ({Count}/{Quota}). Skipping indexing.", state.DailyCount, _options.DailyQuota);
-                    return;
+                    await Task.Delay(TimeSpan.FromMinutes(_options.RunIntervalMinutes), stoppingToken);
+                    continue;
                 }
 
                 int indexedCount = 0;
@@ -102,7 +105,6 @@ public sealed class Worker(
             catch (Exception ex)
             {
                 logger.LogError(ex, "Indexing service encountered an error.");
-                throw;
             }
             finally
             {
